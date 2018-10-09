@@ -1,15 +1,10 @@
-import datetime
-import os
-import random
 import time
 import uuid
 from typing import List
 from response_data import ResponseData
-
 from flask import Flask
 from google.cloud import bigquery
 
-# Imports the Google Cloud client library
 from google.cloud import language
 from google.cloud.language import enums
 from google.cloud.language import types
@@ -107,10 +102,11 @@ def _process_nlp_inference(response_data_list: List[ResponseData]):
         sentiment = client.analyze_sentiment(document=document).document_sentiment
         response_data.overall_sentiment = sentiment.score
 
-        # entity_result = client.analyze_entity_sentiment(document=document)
-        # entities = entity_result.entities
-        # for entity in entities:
-        #     response_data.add_entity(entity.name, entity.sentiment.score)
+        # Submit the document text to the NLP entity analysis API.
+        entity_result = client.analyze_entity_sentiment(document=document)
+        entities = entity_result.entities
+        for entity in entities:
+            response_data.add_entity(entity.name, entity.sentiment.score)
 
 # ===================================================================================================
 # Start the App.
