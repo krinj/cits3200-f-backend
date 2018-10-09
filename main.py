@@ -1,6 +1,6 @@
 import time
 from typing import List
-from flask import Flask
+from flask import Flask, request
 from response_data import ResponseData
 from response_generator import generate_random_response
 
@@ -34,6 +34,12 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     return "CITS 3200: Backend Server"
+
+
+@app.route('/debug', methods=["GET", "POST"])
+def debug():
+    post_data = request.get_json()
+    return post_data
 
 
 @app.route('/submit', methods=["GET", "POST"])
