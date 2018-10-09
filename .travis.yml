@@ -3,5 +3,6 @@ before_install:
   -in cits-3200-abc14d0972cf.json.enc -out cits-3200-abc14d0972cf.json -d
 deploy:
   provider: gae
+  skip_cleanup: true
   keyfile: cits-3200-abc14d0972cf.json
   project: cits-3200
