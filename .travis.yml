@@ -7,10 +7,9 @@ before_install:
   - openssl aes-256-cbc -K $encrypted_d51026dfa49b_key -iv $encrypted_d51026dfa49b_iv
     -in cits-3200-abc14d0972cf.json.enc -out cits-3200-abc14d0972cf.json -d
 
-script:
-  - echo "Hello World"
-  - echo $(cat cits-3200-abc14d0972cf.json)
-
+install:
+  - echo "No Install Required"
+  
 deploy:
   provider: gae
   skip_cleanup: true
