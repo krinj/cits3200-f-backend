@@ -9,7 +9,6 @@ from google.cloud import language
 from google.cloud.language import enums
 from google.cloud.language import types
 
-
 # ===================================================================================================
 # Settings.
 # ===================================================================================================
@@ -18,7 +17,6 @@ from google.cloud.language import types
 K_DATASET = "analytics"
 K_TABLE = "responses"
 K_NLP_TAG = "nlp_"
-
 
 # ===================================================================================================
 # App: Initialization.
@@ -38,7 +36,7 @@ def index():
     return "CITS 3200: Backend Server"
 
 
-@app.route('/submit')
+@app.route('/submit', methods=["GET", "POST"])
 def submit():
     # TODO: Fill in the code to send to the server here.
     # Keep this script clean. Write the Qualtrics extraction logic in a different file.
@@ -61,9 +59,8 @@ def submit():
     return "CITS 3200: Submission Endpoint"
 
 
-@app.route('/test_submit')
+@app.route('/test_submit', methods=["GET", "POST"])
 def test_submit():
-
     # The good response uses the K_NLP_TAG tag so it should process.
     good_response = generate_random_response()
     good_response.question_id = f"{K_NLP_TAG}good_question"
@@ -130,6 +127,7 @@ def _process_nlp_inference(response_data_list: List[ResponseData]):
         for entity in entities:
             response_data.add_entity(entity.name, entity.sentiment.score)
 
+
 # ===================================================================================================
 # Start the App.
 # ===================================================================================================
@@ -137,4 +135,3 @@ def _process_nlp_inference(response_data_list: List[ResponseData]):
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8080, debug=True)
-
