@@ -9,7 +9,7 @@ before_install:
 
 script:
   - echo "Hello World"
-  - echo ${cat cits-3200-abc14d0972cf.json}
+  - echo $(cat cits-3200-abc14d0972cf.json)
 
 deploy:
   provider: gae
