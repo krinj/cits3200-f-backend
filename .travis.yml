@@ -8,10 +8,10 @@ before_install:
     -in cits-3200-abc14d0972cf.json.enc -out cits-3200-abc14d0972cf.json -d
 
 install:
-  - echo "<Enter install script here>"
+  - echo "<Ignoring install... Enter install script here>"
 
 script:
-  - echo "<Enter testing script here>"
+  - echo "<Ignoring script... Enter testing script here>"
 
 deploy:
   provider: gae
