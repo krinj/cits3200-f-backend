@@ -1,3 +1,4 @@
+import time
 from typing import List
 from flask import Flask
 from response_data import ResponseData
@@ -39,6 +40,24 @@ def index():
 
 @app.route('/submit')
 def submit():
+    # TODO: Fill in the code to send to the server here.
+    # Keep this script clean. Write the Qualtrics extraction logic in a different file.
+
+    response_data = ResponseData()
+    response_data.year_of_birth = 1985
+    response_data.organization = "<Organization>"
+    response_data.question_name = "<Question Name>"
+    response_data.question_id = "<Qualtrics Question ID>"
+    response_data.gender = "<Gender>"
+    response_data.timestamp = int(time.time())
+    response_data.employment_status = "<Employment Status>"
+    response_data.response = "<Response Text>"
+    response_data.survey_id = "<Qualtrics Survey ID>"
+    response_data.submission_id = "<Qualtrics Submission ID>"
+    response_data.survey_name = "<Qualtrics Survey Name>"
+
+    _process_responses([response_data])
+
     return "CITS 3200: Submission Endpoint"
 
 
