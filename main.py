@@ -14,14 +14,26 @@ from google.cloud import language
 from google.cloud.language import enums
 from google.cloud.language import types
 
-# If `entrypoint` is not defined in app.yaml, App Engine will look for an app
-# called `app` in `main.py`.
+
+# ===================================================================================================
+# Settings.
+# ===================================================================================================
+
+K_DATASET = "analytics"
+K_TABLE = "responses"
+
+
+# ===================================================================================================
+# App: Initialization.
+# ===================================================================================================
 
 
 app = Flask(__name__)
 
-K_DATASET = "analytics"
-K_TABLE = "responses"
+
+# ===================================================================================================
+# App: Routing.
+# ===================================================================================================
 
 
 @app.route('/')
@@ -50,31 +62,16 @@ def test_submit():
     response_data.submission_id = uuid.uuid4().hex
     response_data.survey_name = "default_survey"
 
+    _process_nlp_inference([response_data])
     _upload_response([response_data])
 
     return "Test Submission With Fake Data"
 
 
-# @app.route('/')
-# def hello():
-#     """Return a friendly HTTP greeting."""
-#     try:
-#         return "Hello App Example"
-#
-#         # ret_str = "Hello World<br> \n"
-#         # ret_str += f"{bigquery.__version__}<br>"
-#         # auth = os.listdir(".")
-#         # ret_str += "List Dir<br> \n"
-#         # for i in auth:
-#         #     ret_str += f"{i}<br> \n"
-#         #
-#         # feedback = "I think this is a great product. " \
-#         #            "I had an amazing time at the BBQ party, but I wish there was more alcohol."
-#         # s_score, s_mag = submit_nlp_request(feedback)
-#         # ret_str += submit_data(feedback, s_score, s_mag)
-#         # return ret_str
-#     except Exception as e:
-#         return str(e)
+# ===================================================================================================
+# Private API Calls: BigQuery and Google NLP.
+# ===================================================================================================
+
 
 def _upload_response(response_data_list: List[ResponseData]):
     """ Upload this response data to the BigQuery table. """
@@ -95,19 +92,29 @@ def _upload_response(response_data_list: List[ResponseData]):
         return "Submit Data Failure"
 
 
-def submit_nlp_request(text):
-    # Instantiates a client
+def _process_nlp_inference(response_data_list: List[ResponseData]):
+    """ Populates a list of ResponseData with sentiment and entity scores. """
+
     client = language.LanguageServiceClient()
+    for response_data in response_data_list:
 
-    # The text to analyze
-    document = types.Document(
-        content=text,
-        type=enums.Document.Type.PLAIN_TEXT)
+        # Create the text to analyze as a document.
+        document = types.Document(
+            content=response_data.response,
+            type=enums.Document.Type.PLAIN_TEXT)
 
-    # Detects the sentiment of the text
-    sentiment = client.analyze_sentiment(document=document).document_sentiment
-    print('Sentiment: {}, {}'.format(sentiment.score, sentiment.magnitude))
-    return sentiment.score, sentiment.magnitude
+        # Submit the document text to the NLP sentiment analysis API.
+        sentiment = client.analyze_sentiment(document=document).document_sentiment
+        response_data.overall_sentiment = sentiment.score
+
+        # entity_result = client.analyze_entity_sentiment(document=document)
+        # entities = entity_result.entities
+        # for entity in entities:
+        #     response_data.add_entity(entity.name, entity.sentiment.score)
+
+# ===================================================================================================
+# Start the App.
+# ===================================================================================================
 
 
 if __name__ == '__main__':
