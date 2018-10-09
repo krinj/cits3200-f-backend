@@ -1,5 +1,5 @@
 """
-receives data from qualtrics and process it to gc nl and add the result to gc sql
+receives data from qualtrics and process it to gc nl and add the result to gc big query
 
 Python version 3.6.6
 """
@@ -11,9 +11,8 @@ import json
 import io
 import os
 
-# import - flask sqlalchemy
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+# import - google cloud big query api
+from google.cloud import bigquery
 
 # import - google cloud natural language api
 from google.cloud import language
