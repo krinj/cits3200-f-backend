@@ -43,7 +43,7 @@ def debug():
     return jsonify(post_data)
 
 
-@app.route('/submit', methods=["GET", "POST"])
+@app.route('/manual_submit', methods=["GET", "POST"])
 def manual_submit():
     """
     Receive Survey Response as a POST request.
