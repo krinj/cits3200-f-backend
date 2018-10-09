@@ -1,18 +1,3 @@
-# Copyright 2018 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-# [START gae_python37_app]
 import datetime
 import os
 import random
@@ -33,25 +18,40 @@ app = Flask(__name__)
 
 
 @app.route('/')
-def hello():
-    """Return a friendly HTTP greeting."""
-    try:
-        return "Hello App Example"
+def index():
+    return "CITS 3200: Backend Server"
 
-        # ret_str = "Hello World<br> \n"
-        # ret_str += f"{bigquery.__version__}<br>"
-        # auth = os.listdir(".")
-        # ret_str += "List Dir<br> \n"
-        # for i in auth:
-        #     ret_str += f"{i}<br> \n"
-        #
-        # feedback = "I think this is a great product. " \
-        #            "I had an amazing time at the BBQ party, but I wish there was more alcohol."
-        # s_score, s_mag = submit_nlp_request(feedback)
-        # ret_str += submit_data(feedback, s_score, s_mag)
-        # return ret_str
-    except Exception as e:
-        return str(e)
+
+@app.route('/submit')
+def submit():
+    return "CITS 3200: Submission Endpoint"
+
+
+@app.route('/test_submit')
+def test_submit():
+    return "Test Submission With Fake Data"
+
+
+# @app.route('/')
+# def hello():
+#     """Return a friendly HTTP greeting."""
+#     try:
+#         return "Hello App Example"
+#
+#         # ret_str = "Hello World<br> \n"
+#         # ret_str += f"{bigquery.__version__}<br>"
+#         # auth = os.listdir(".")
+#         # ret_str += "List Dir<br> \n"
+#         # for i in auth:
+#         #     ret_str += f"{i}<br> \n"
+#         #
+#         # feedback = "I think this is a great product. " \
+#         #            "I had an amazing time at the BBQ party, but I wish there was more alcohol."
+#         # s_score, s_mag = submit_nlp_request(feedback)
+#         # ret_str += submit_data(feedback, s_score, s_mag)
+#         # return ret_str
+#     except Exception as e:
+#         return str(e)
 
 
 def submit_nlp_request(text):
@@ -96,9 +96,5 @@ def submit_data(text, s_score, s_mag):
 
 
 if __name__ == '__main__':
-    # This is used when running locally only. When deploying to Google App
-    # Engine, a webserver process such as Gunicorn will serve the app. This
-    # can be configured by adding an `entrypoint` to app.yaml.
-
     app.run(host='127.0.0.1', port=8080, debug=True)
-# [END gae_python37_app]
+
