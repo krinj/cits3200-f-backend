@@ -1,6 +1,6 @@
 import time
 from typing import List
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from response_data import ResponseData
 from response_generator import generate_random_response
 
@@ -38,8 +38,9 @@ def index():
 
 @app.route('/debug', methods=["GET", "POST"])
 def debug():
-    post_data = request.get_json()
-    return post_data
+    """ Return the POST object back as JSON. """
+    post_data = request.json
+    return jsonify(post_data)
 
 
 @app.route('/submit', methods=["GET", "POST"])
