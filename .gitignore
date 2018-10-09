@@ -1,0 +1,8 @@
+~$*
+
+#pycharm
+.idea/*
+
+#python version 3.6.6 virtual environment
+venv/*
+activate_venv.sh

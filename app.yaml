@@ -1,10 +1,1 @@
 runtime: python36
-
-env_variables:
-    # Replace user, password, database, and instance connection name with the values obtained
-    # when configuring your Cloud SQL instance.
-    SQLALCHEMY_DATABASE_URI: >-
-      mysql+pymysql://root:M2jquKgPuDsbM7kN@/analysis?unix_socket=/cloudsql/cits-3200:australia-southeast1:analytics--backend-sql-nl-testing-clone
-
-beta_settings:
-    cloud_sql_instances: cits-3200:australia-southeast1:analytics--backend-sql-nl-testing-clone
