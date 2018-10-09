@@ -1,10 +1,9 @@
-import time
-import uuid
 from typing import List
-from response_data import ResponseData
 from flask import Flask
-from google.cloud import bigquery
+from response_data import ResponseData
+from response_generator import generate_random_response
 
+from google.cloud import bigquery
 from google.cloud import language
 from google.cloud.language import enums
 from google.cloud.language import types
@@ -14,8 +13,10 @@ from google.cloud.language import types
 # Settings.
 # ===================================================================================================
 
+
 K_DATASET = "analytics"
 K_TABLE = "responses"
+K_NLP_TAG = "nlp_"
 
 
 # ===================================================================================================
@@ -44,21 +45,16 @@ def submit():
 @app.route('/test_submit')
 def test_submit():
 
-    response_data = ResponseData()
-    response_data.year_of_birth = 1986
-    response_data.organization = "Google"
-    response_data.question_name = "How are you today?"
-    response_data.question_id = "nlp_how_are_you"
-    response_data.gender = "male"
-    response_data.timestamp = time.time()
-    response_data.employment_status = "full_time"
-    response_data.response = "I had a great day today! I love this new CEO, he bought us a fantastic ping pong table."
-    response_data.survey_id = uuid.uuid4().hex
-    response_data.submission_id = uuid.uuid4().hex
-    response_data.survey_name = "default_survey"
+    # The good response uses the K_NLP_TAG tag so it should process.
+    good_response = generate_random_response()
+    good_response.question_id = f"{K_NLP_TAG}good_question"
+    good_response.response = "I really like the new kitchen. The lighting is fantastic."
 
-    _process_nlp_inference([response_data])
-    _upload_response([response_data])
+    # If the question ID does not have the K_NLP_TAG tag, it should be ignored.
+    bad_response = generate_random_response()
+    bad_response.question_id = "bad_question"
+
+    _process_responses([good_response, bad_response])
 
     return "Test Submission With Fake Data"
 
@@ -66,6 +62,13 @@ def test_submit():
 # ===================================================================================================
 # Private API Calls: BigQuery and Google NLP.
 # ===================================================================================================
+
+
+def _process_responses(response_data_list: List[ResponseData]):
+    """ Filter out any responses without the correct question ID. """
+    response_data_list = [r for r in response_data_list if K_NLP_TAG in r.question_id[:len(K_NLP_TAG)]]
+    _process_nlp_inference(response_data_list)
+    _upload_response(response_data_list)
 
 
 def _upload_response(response_data_list: List[ResponseData]):
