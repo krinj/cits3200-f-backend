@@ -1,0 +1,3 @@
+service: backend
+runtime: python37
+threadsafe: true
