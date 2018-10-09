@@ -1,7 +1,7 @@
+from flask import Flask, request, jsonify
+from response_data import *
 import time
 from typing import List
-from flask import Flask, request, jsonify
-from response_data import ResponseData
 from response_generator import generate_random_response
 
 from google.cloud import bigquery
@@ -44,24 +44,50 @@ def debug():
 
 
 @app.route('/submit', methods=["GET", "POST"])
+def manual_submit():
+    """
+    Receive Survey Response as a POST request.
+    Assumes that we receive a JSON object with all of the keys populated.
+    """
+    post_data = request.json
+
+    r_data = ResponseData()
+    r_data.year_of_birth = int(post_data[K_YEAR_OF_BIRTH])
+    r_data.organization = post_data[K_ORGANIZATION]
+    r_data.question_name = post_data[K_QUESTION_NAME]
+    r_data.question_id = post_data[K_QUESTION_ID]
+    r_data.gender = post_data[K_GENDER]
+    r_data.timestamp = int(time.time())
+    r_data.employment_status = post_data[K_EMPLOYMENT_STATUS]
+    r_data.response = post_data[K_RESPONSE]
+    r_data.survey_id = post_data[K_SURVEY_ID]
+    r_data.submission_id = post_data[K_SUBMISSION_ID]
+    r_data.survey_name = post_data[K_SURVEY_NAME]
+
+    _process_responses([r_data])
+
+    return "CITS 3200: Manual Submission Endpoint"
+
+
+@app.route('/submit', methods=["GET", "POST"])
 def submit():
     # TODO: Fill in the code to send to the server here.
     # Keep this script clean. Write the Qualtrics extraction logic in a different file.
 
-    response_data = ResponseData()
-    response_data.year_of_birth = 1985
-    response_data.organization = "<Organization>"
-    response_data.question_name = "<Question Name>"
-    response_data.question_id = "<Qualtrics Question ID>"
-    response_data.gender = "<Gender>"
-    response_data.timestamp = int(time.time())
-    response_data.employment_status = "<Employment Status>"
-    response_data.response = "<Response Text>"
-    response_data.survey_id = "<Qualtrics Survey ID>"
-    response_data.submission_id = "<Qualtrics Submission ID>"
-    response_data.survey_name = "<Qualtrics Survey Name>"
+    r_data = ResponseData()
+    r_data.year_of_birth = 1985
+    r_data.organization = "<Organization>"
+    r_data.question_name = "<Question Name>"
+    r_data.question_id = "<Qualtrics Question ID>"
+    r_data.gender = "<Gender>"
+    r_data.timestamp = int(time.time())
+    r_data.employment_status = "<Employment Status>"
+    r_data.response = "<Response Text>"
+    r_data.survey_id = "<Qualtrics Survey ID>"
+    r_data.submission_id = "<Qualtrics Submission ID>"
+    r_data.survey_name = "Manual Qualtrics Survey"
 
-    _process_responses([response_data])
+    _process_responses([r_data])
 
     return "CITS 3200: Submission Endpoint"
 
