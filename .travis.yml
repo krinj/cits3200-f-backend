@@ -1,0 +1,20 @@
+sudo: false
+language: python
+python:
+  - "3.6"
+
+before_install:
+  - openssl aes-256-cbc -K $encrypted_d51026dfa49b_key -iv $encrypted_d51026dfa49b_iv
+    -in cits-3200-abc14d0972cf.json.enc -out cits-3200-abc14d0972cf.json -d
+
+install:
+  - echo "<Ignoring install... Enter install script here>"
+
+script:
+  - echo "<Ignoring script... Enter testing script here>"
+
+deploy:
+  provider: gae
+  skip_cleanup: true
+  keyfile: cits-3200-abc14d0972cf.json
+  project: cits-3200

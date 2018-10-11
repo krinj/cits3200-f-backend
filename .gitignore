@@ -1,7 +1,7 @@
-~$*
-
 # pycharm
-.idea/
+\.idea/
+
+cits-3200-abc14d0972cf\.json
 
 # python version 3.6.6 virtual environment folder
 venv/*
