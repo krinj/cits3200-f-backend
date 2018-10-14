@@ -1,5 +1,6 @@
 # pycharm
 \.idea/
+__pycache__/*
 
 cits-3200-abc14d0972cf\.json
 

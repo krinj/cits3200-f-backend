@@ -2,4 +2,5 @@ service: backend
 runtime: python37
 
 env_variable:
-  
+  QUALTRICS_API_TOKEN: "2uru8E7EJNNE7EwylDz5ca4ZUOeFo4ceb3TMG8oY"
+  QUALTRICS_DATA_CENTER: "ca1"

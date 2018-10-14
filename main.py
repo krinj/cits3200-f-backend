@@ -2,6 +2,10 @@ from flask import Flask, request, jsonify
 from response_data import *
 import time
 from typing import List
+
+from response import get_survey_id
+from response import get_response
+from response import get_text_questions
 from response_generator import generate_random_response
 
 from google.cloud import bigquery
@@ -73,6 +77,12 @@ def manual_submit():
 def submit():
     # TODO: Fill in the code to send to the server here.
     # Keep this script clean. Write the Qualtrics extraction logic in a different file.
+
+    post_data = request.json
+    last_response_id = post_data['last_response_id']
+    last_response_date = post_data['last_response_date']
+    survey_id = get_survey_id(post_data['survey_id'])
+    response = get_response(survey_id, last_response_date)
 
     r_data = ResponseData()
     r_data.year_of_birth = 1985
