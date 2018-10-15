@@ -25,7 +25,7 @@ def get_survey_id(survey_name):
     surveys = []
 
     # static parameters
-    baseUrl = "https://{0}.qualtrics.com/API/v3/surveys".format(data_center)
+    base_url = "https://{0}.qualtrics.com/API/v3/surveys".format(data_center)
     headers = {
         "x-api-token": api_token,
     }
@@ -34,7 +34,7 @@ def get_survey_id(survey_name):
     offset = 0
     while True:
         surveys_request_payload = '{"offset":"' + str(offset) + '"}'
-        surveys_request_json = requests.get(baseUrl, data=surveys_request_payload, headers=headers)
+        surveys_request_json = requests.get(base_url, data=surveys_request_payload, headers=headers)
         surveys_json = json.loads(surveys_request_json.text)
         meta = surveys_json['meta']
         # TODO error check using meta
@@ -52,6 +52,34 @@ def get_survey_id(survey_name):
         if name == survey_name:
             survey_id = survey['id']
             return survey_id
+
+
+def get_questions(survey_id):
+
+    # initialisation
+    question_names = []
+
+    # static parameters
+    base_url = "https://{0}.qualtrics.com/API/v3/surveys/{1}".format(data_center, survey_id)
+    headers = {
+        "x-api-token": api_token,
+    }
+
+    survey_info_request_json = requests.get(base_url, headers=headers)
+    survey_info_json = json.loads(survey_info_request_json.text)
+    meta = survey_info_json['meta']
+    # TODO error check using meta, when not return 200
+    result = survey_info_json['result']
+    questions = result['questions']
+    for question_name in questions.keys():
+        question = questions[question_name]
+        question_name = question['questionName']
+        question_names.append(question_name)
+
+    if not question_names:
+        return None
+    else:
+        return question_names
 
 
 def get_text_questions(survey_id):
@@ -135,11 +163,11 @@ def get_last_response_legacy(survey_id):
                 csv_reader = csv.DictReader(csv_file)
                 i = 0
                 for row in csv_reader:
-                    if i < 2:
-                        i = i + 1
-                    else:
-                        responses.append(row)
-
+                    if i > 1:
+                        finished = row['Finished']
+                        if finished == '1':
+                            responses.append(row)
+                    i = i + 1
 
     # delete downloaded files
     for root, dirs, files in os.walk(download_path, topdown=False):
@@ -162,7 +190,6 @@ def get_last_response(survey_id):
     start_date = str(
         (datetime.datetime.utcnow() - datetime.timedelta(hours=timedelta_hours)).replace(microsecond=0).isoformat()) + time_zone
     end_date = str(datetime.datetime.utcnow().replace(microsecond=0).isoformat()) + time_zone
-
 
     # static parameters
     request_check_progress = 0.0
@@ -212,11 +239,11 @@ def get_last_response(survey_id):
                 csv_reader = csv.DictReader(csv_file)
                 i = 0
                 for row in csv_reader:
-                    if i < 2:
-                        i = i + 1
-                    else:
-                        responses.append(row)
-
+                    if i > 1:
+                        finished = row['Finished']
+                        if finished == '1':
+                            responses.append(row)
+                    i = i + 1
 
     # delete downloaded files
     for root, dirs, files in os.walk(download_path, topdown=False):

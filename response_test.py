@@ -9,6 +9,9 @@ from response import *
 
 survey_id = "SV_6z1si0Nf0fgGHUF"
 
+questions = get_questions(survey_id)
+print(questions)
+
 text_questions = get_text_questions(survey_id)
 print(text_questions)
 
