@@ -124,7 +124,17 @@ If you choose to process the data this way, then it means each distinct question
 #### Submit
 
 **Route**: https://backend-dot-cits-3200.appspot.com/submit
-This is a `POST`/`GET` request where we can get the server to automatically unpack and submit the latest response from the Qualtrics platform. You must pass in the survey ID as a query for this to work.
+This is a `POST`/`GET` request where we can get the server to automatically unpack and submit the latest response from the Qualtrics platform. You must pass in the survey ID as a query for this to work. In the Qualtrics **Survey Flow** you can put this in as a parameter.
+
+![get_query](images/get_query.png)
+
+Otherwise, there is the option to use a direct survey id in the URL as well. This will essentially process the **latest** response from Qualtric survey through the NLP pipeline, and populate the BigQuery table with it.
+
+Replace `<SURVEY_ID>` with your own survey ID to process.
+
+```
+https://backend-dot-cits-3200.appspot.com/submit?survey_id=<SURVEY_ID>
+```
 
 
 
