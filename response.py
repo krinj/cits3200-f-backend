@@ -54,6 +54,39 @@ def get_survey_id(survey_name):
             return survey_id
 
 
+def get_survey_info(survey_id):
+
+    # static parameters
+    base_url = "https://{0}.qualtrics.com/API/v3/surveys/{1}".format(data_center, survey_id)
+    headers = {
+        "x-api-token": api_token,
+    }
+
+    # survey info
+    survey_info_request_json = requests.get(base_url, headers=headers)
+    survey_info_json = json.loads(survey_info_request_json.text)
+    meta = survey_info_json['meta']
+    # TODO error check
+    result = survey_info_json['result']
+    return result
+
+
+def get_qname_qid_dict(questions_info):
+
+    # initialisation
+    q_dict = {}
+
+    for qid in questions_info.keys():
+        question_info = questions_info[qid]
+        question_name = question_info['questionName']
+        dict[question_name] = qid
+
+    if not q_dict:
+        return None
+    else:
+        return q_dict
+
+
 def get_questions(survey_id):
 
     # initialisation
