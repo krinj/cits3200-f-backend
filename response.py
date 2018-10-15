@@ -150,74 +150,6 @@ def get_text_questions(survey_id):
         return text_question_names
 
 
-def get_last_response_legacy(survey_id):
-
-    # initialisation
-    responses = []
-    timedelta_hours = 1
-    time_zone = "Z"
-    start_date = str(
-        (datetime.datetime.utcnow() - datetime.timedelta(hours=timedelta_hours)).replace(
-            microsecond=0).isoformat()) + time_zone
-    end_date = str(datetime.datetime.utcnow().replace(microsecond=0).isoformat()) + time_zone
-
-    # static parameters
-    request_check_progress = 0
-    progress_status = "in progress"
-    base_url = "https://{0}.qualtrics.com/API/v3/responseexports/".format(data_center)
-    headers = {
-        "content-type": "application/json",
-        "x-api-token": api_token,
-    }
-
-    # creating data export
-    download_request_payload = '{"format":"' + file_format + '","surveyId":"' + survey_id + '","startDate":"' + start_date + '","endDate":"' + end_date + '"}'
-    download_request_url = base_url
-    download_request_response = requests.request("POST", download_request_url, data=download_request_payload,
-                                                 headers=headers)
-    progress_id = download_request_response.json()["result"]["id"]
-
-    # checking on data export progress and waiting until export is ready
-    while request_check_progress < 100 and progress_status is not "complete":
-        request_check_url = base_url + progress_id
-        request_check_response = requests.request("GET", request_check_url, headers=headers)
-        request_check_progress = request_check_response.json()["result"]["percentComplete"]
-
-    # downloading file
-    request_download_url = base_url + progress_id + '/file'
-    request_download = requests.request("GET", request_download_url, headers=headers, stream=True)
-
-    # unzipping the file
-    cwd = os.getcwd()
-    download_path = cwd + '/downloads'
-    zipfile.ZipFile(io.BytesIO(request_download.content)).extractall(download_path)
-
-    # get all the responses in downloaded jsons
-    for root, dirs, files in os.walk(download_path, topdown=False):
-        for name in files:
-            file = os.path.join(root, name)
-            with open(file) as csv_file:
-                csv_reader = csv.DictReader(csv_file)
-                i = 0
-                for row in csv_reader:
-                    if i > 1:
-                        finished = row['Finished']
-                        if finished == '1':
-                            responses.append(row)
-                    i = i + 1
-
-    # delete downloaded files
-    for root, dirs, files in os.walk(download_path, topdown=False):
-        for name in files:
-            file = os.path.join(root, name)
-            os.remove(file)
-
-    if not responses:
-        return None
-    else:
-        return responses[-1]
-
-
 def get_last_response(survey_id):
 
     # initialisation
@@ -262,33 +194,19 @@ def get_last_response(survey_id):
     # downloading file
     request_download_url = base_url + file_id + '/file'
     request_download = requests.request("GET", request_download_url, headers=headers, stream=True)
+    input_zip = zipfile.ZipFile(io.BytesIO(request_download.content))
 
-    # unzipping the file
-    cwd = os.getcwd()
-    download_path = cwd + '/downloads'
-    zipfile.ZipFile(io.BytesIO(request_download.content)).extractall(download_path)
+    for name in input_zip.namelist():
 
-    # get all the responses in downloaded jsons
-    for root, dirs, files in os.walk(download_path, topdown=False):
-        for name in files:
-            file = os.path.join(root, name)
-            with open(file) as csv_file:
-                csv_reader = csv.DictReader(csv_file)
-                i = 0
-                for row in csv_reader:
-                    if i > 1:
-                        finished = row['Finished']
-                        if finished == '1':
-                            responses.append(row)
-                    i = i + 1
-
-    # delete downloaded files
-    for root, dirs, files in os.walk(download_path, topdown=False):
-        for name in files:
-            file = os.path.join(root, name)
-            os.remove(file)
-
-    if not responses:
-        return None
-    else:
-        return responses[-1]
+        # We cannot save CSV files in GAE, so I must convert to ByteString and read it.
+        byte_file = input_zip.read(name)
+        fake_file = io.StringIO(byte_file.decode('utf8'))
+        csv_reader = csv.DictReader(fake_file)
+        i = 0
+        for row in csv_reader:
+            if i > 1:
+                finished = row['Finished']
+                if finished == '1':
+                    responses.append(row)
+            i = i + 1
+    return responses[-1]
