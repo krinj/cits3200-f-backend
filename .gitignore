@@ -1,4 +1,7 @@
 
 \.idea/
 
+venv/*
+activate_venv.sh
+__pycache__/*
 cits-3200-abc14d0972cf\.json
