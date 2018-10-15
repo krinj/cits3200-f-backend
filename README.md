@@ -84,14 +84,12 @@ In `main.py` you should find these lines near the top:
 ```python
 K_DATASET = "analytics"
 K_TABLE = "responses"
-K_NLP_TAG = "nlp_"
 ```
 
-| Field Name  | Description                                                  |
-| ----------- | ------------------------------------------------------------ |
-| `K_DATASET` | The name of the BigQuery data set to push this data to.      |
-| `K_TABLE`   | The name of the BigQuery table to push this data to.         |
-| `K_NLP_TAG` | Will only process responses which have a `question_id` that begin with this tag. |
+| Field Name  | Description                                             |
+| ----------- | ------------------------------------------------------- |
+| `K_DATASET` | The name of the BigQuery data set to push this data to. |
+| `K_TABLE`   | The name of the BigQuery table to push this data to.    |
 
 
 
