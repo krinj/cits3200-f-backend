@@ -13,9 +13,13 @@ import json
 import csv
 
 # user parameters
-api_token = os.environ["QUALTRICS_API_TOKEN"]
-data_center = os.environ["QUALTRICS_DATA_CENTER"]
+# api_token = os.environ["QUALTRICS_API_TOKEN"]
+# data_center = os.environ["QUALTRICS_DATA_CENTER"]
+
+api_token = "c4JmqD2ohMRIbRNXTqd6YQmHlvxIBiVvV2eekgqo"
+data_center = "ca1"
 file_format = "csv"
+
 
 # not needed, use sid from survey flow instead
 def get_survey_id(survey_name):
@@ -79,7 +83,7 @@ def get_qname_qid_dict(questions_info):
     for qid in questions_info.keys():
         question_info = questions_info[qid]
         question_name = question_info['questionName']
-        dict[question_name] = qid
+        q_dict[question_name] = qid
 
     if not q_dict:
         return None
