@@ -12,52 +12,10 @@ import zipfile
 import json
 import csv
 
-# user parameters
-# api_token = os.environ["QUALTRICS_API_TOKEN"]
-# data_center = os.environ["QUALTRICS_DATA_CENTER"]
-
-api_token = "c4JmqD2ohMRIbRNXTqd6YQmHlvxIBiVvV2eekgqo"
-data_center = "ca1"
 file_format = "csv"
 
 
-# not needed, use sid from survey flow instead
-def get_survey_id(survey_name):
-
-    # initialisation
-    surveys = []
-
-    # static parameters
-    base_url = "https://{0}.qualtrics.com/API/v3/surveys".format(data_center)
-    headers = {
-        "x-api-token": api_token,
-    }
-
-    # adding surveys to the surveys list
-    offset = 0
-    while True:
-        surveys_request_payload = '{"offset":"' + str(offset) + '"}'
-        surveys_request_json = requests.get(base_url, data=surveys_request_payload, headers=headers)
-        surveys_json = json.loads(surveys_request_json.text)
-        meta = surveys_json['meta']
-        # TODO error check using meta
-        result = surveys_json['result']
-        elements = result['elements']
-        if elements:
-            for element in elements:
-                surveys.append(element)
-        if result['nextPage'] is None:
-            break
-
-    # search survey id based on survey name
-    for survey in surveys:
-        name = survey['name']
-        if name == survey_name:
-            survey_id = survey['id']
-            return survey_id
-
-
-def get_survey_info(survey_id):
+def get_survey_info(survey_id, api_token: str, data_center: str):
 
     # static parameters
     base_url = "https://{0}.qualtrics.com/API/v3/surveys/{1}".format(data_center, survey_id)
@@ -91,66 +49,7 @@ def get_qname_qid_dict(questions_info):
         return q_dict
 
 
-def get_questions(survey_id):
-
-    # initialisation
-    question_names = []
-
-    # static parameters
-    base_url = "https://{0}.qualtrics.com/API/v3/surveys/{1}".format(data_center, survey_id)
-    headers = {
-        "x-api-token": api_token,
-    }
-
-    survey_info_request_json = requests.get(base_url, headers=headers)
-    survey_info_json = json.loads(survey_info_request_json.text)
-    meta = survey_info_json['meta']
-    # TODO error check using meta, when not return 200
-    result = survey_info_json['result']
-    questions = result['questions']
-    for question_name in questions.keys():
-        question = questions[question_name]
-        question_name = question['questionName']
-        question_names.append(question_name)
-
-    if not question_names:
-        return None
-    else:
-        return question_names
-
-
-def get_text_questions(survey_id):
-
-    # initialisation
-    text_question_names = []
-
-    # static parameters
-    base_url = "https://{0}.qualtrics.com/API/v3/surveys/{1}".format(data_center, survey_id)
-    headers = {
-        "x-api-token": api_token,
-    }
-
-    survey_info_request_json = requests.get(base_url, headers=headers)
-    survey_info_json = json.loads(survey_info_request_json.text)
-    meta = survey_info_json['meta']
-    # TODO error check using meta, when not return 200
-    result = survey_info_json['result']
-    questions = result['questions']
-    for question_name in questions.keys():
-        question = questions[question_name]
-        question_type = question['questionType']
-        type = question_type['type']
-        if type == "TE":
-            question_name = question['questionName']
-            text_question_names.append(question_name)
-
-    if not text_question_names:
-        return None
-    else:
-        return text_question_names
-
-
-def get_last_response(survey_id):
+def get_last_response(survey_id, api_token: str, data_center: str):
 
     # initialisation
     responses = []

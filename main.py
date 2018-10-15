@@ -76,8 +76,14 @@ def manual_submit():
 def submit():
     # TODO: Fill in the code to send to the server here.
     # Keep this script clean. Write the Qualtrics extraction logic in a different file.
+
     survey_id = request.args.get("survey_id")
-    responses = handle_survey_response(survey_id)
+    token = request.args.get("token")
+
+    data_center = request.args.get("data_center")
+    data_center = "ca1"if data_center is None else data_center
+
+    responses = handle_survey_response(survey_id, token, data_center)
     _process_responses(responses)
     return "CITS 3200: Submission Endpoint"
 

@@ -19,12 +19,12 @@ TAG_EMPLOYMENT_STATUS = "EMP"
 TAG_NLP_RESPONSE = "NLP"
 
 
-def handle_survey_response(survey_id: str):
+def handle_survey_response(survey_id: str, token: str, data_center: str="ca1"):
 
-    survey_info = get_survey_info(survey_id)
+    survey_info = get_survey_info(survey_id, token, data_center)
     questions_info = survey_info['questions']
     qname_qid_dict = get_qname_qid_dict(questions_info)
-    response_dict = get_last_response(survey_id)
+    response_dict = get_last_response(survey_id, token, data_center)
 
     # qids
     gender_qid = qname_qid_dict[TAG_GENDER]

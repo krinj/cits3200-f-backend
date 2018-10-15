@@ -12,6 +12,11 @@ __email__ = "juangbhanich.k@gmail.com"
 __version__ = "0.0.0"
 
 if __name__ == "__main__":
-    responses = handle_survey_response("SV_5BeysUyOoCyZZSR")
+
+    responses = handle_survey_response(
+        "SV_5BeysUyOoCyZZSR",
+        "c4JmqD2ohMRIbRNXTqd6YQmHlvxIBiVvV2eekgqo",
+        "ca1")
+
     for r in responses:
         print(r)
