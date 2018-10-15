@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from response_auto_handler import handle_survey_response
 from response_data import *
 import time
 from typing import List
@@ -18,7 +19,7 @@ from google.cloud.language import types
 
 K_DATASET = "analytics"
 K_TABLE = "responses"
-K_NLP_TAG = "nlp_"
+K_NLP_TAG = "NLP"
 
 # ===================================================================================================
 # App: Initialization.
@@ -75,42 +76,9 @@ def manual_submit():
 def submit():
     # TODO: Fill in the code to send to the server here.
     # Keep this script clean. Write the Qualtrics extraction logic in a different file.
-
-    post_data = request.json
-    survey_id = post_data['sid']
-    survey_info = get_survey_info(survey_id)
-    questions_info = survey_info['questions']
-    qname_qid_dict = get_qname_qid_dict(questions_info)
-    response_dict = get_last_response(survey_id)
-
-    # tags
-    year_of_birth_tag = "yob_"
-    organization_tag = "org_"
-    gender_tag = "gen_"
-    employment_status_tag = "emp_"
-    nlp_response_tag = "nlp_"
-
-    # qids
-    nlp_response_qid = qname_qid_dict[nlp_response_tag]
-    gender_qid = qname_qid_dict[gender_tag]
-    employment_status_qid = qname_qid_dict[employment_status_tag]
-
-    # r_data assignment
-    r_data = ResponseData()
-    r_data.year_of_birth = int(response_dict[year_of_birth_tag])
-    r_data.organization = response_dict[organization_tag]
-    r_data.question_name = questions_info[nlp_response_qid]['questionText']
-    r_data.question_id = nlp_response_tag
-    r_data.gender = questions_info[gender_qid]['choices'][response_dict[gender_tag]]['choiceText']
-    r_data.timestamp = int(time.time())
-    r_data.employment_status = questions_info[employment_status_qid]['choices'][response_dict[employment_status_tag]]['choiceText']
-    r_data.response = response_dict[nlp_response_tag]
-    r_data.survey_id = survey_id
-    r_data.submission_id = response_dict['ResponseId']
-    r_data.survey_name = survey_info['name']
-
-    _process_responses([r_data])
-
+    survey_id = request.args.get("survey_id")
+    responses = handle_survey_response(survey_id)
+    _process_responses(responses)
     return "CITS 3200: Submission Endpoint"
 
 

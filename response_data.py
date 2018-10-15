@@ -70,6 +70,10 @@ class ResponseData:
         self.overall_sentiment: float = 0.5
         self.entity: List[Entity] = []
 
+    def __repr__(self):
+        data = self.export_as_json()
+        return str(data)
+
     def generate_key(self):
         self.key = f"{self.organization.lower()}_{self.timestamp}_{self.uid}"
 
