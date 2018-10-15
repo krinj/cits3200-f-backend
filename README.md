@@ -10,6 +10,7 @@ This is the back-end, serverless application for the Sentiment Analytics app for
 * [Overview](#overview)
 * [Setup](#setup)
 * [Configuration](#configuration)
+* [Question ID](#question-id)
 * [API](#api)
 
 
@@ -51,6 +52,24 @@ runtime: python37
 ```
 
 > By default, this App will be created under the service name `backend`. I do believe though that App Engine also requires at least one app without a defined service name (i.e. default service) in order to function. So if it errors, you might need to create a simple default service, or just uncomment this line to deploy it to the default tag
+
+
+
+## Question ID
+
+In order to set up the survey for the pipeline to process, we must use some specific question tags to tell the back-end which questions to process. Any fields without the tagged questions will be ignored. A survey should contain each one of the tag options, otherwise it might not process properly.
+
+![question_id](images/question_id.png)
+
+
+
+| Tag   | Description                                                  |
+| ----- | ------------------------------------------------------------ |
+| `YOB` | Year of birth.                                               |
+| `ORG` | The organization that this person belongs to.                |
+| `GEN` | Gender.                                                      |
+| `EMP` | Employment status.                                           |
+| `NLP` | Any question tagged with `NLP` at the start will be processed as a NLP text question. For example: `NLP_Q1` and `NLP_Q2` will be processed by the pipeline. `Q3` will not. |
 
 
 
@@ -130,10 +149,10 @@ This is a `POST`/`GET` request where we can get the server to automatically unpa
 
 Otherwise, there is the option to use a direct survey id in the URL as well. This will essentially process the **latest** response from Qualtric survey through the NLP pipeline, and populate the BigQuery table with it.
 
-Replace `<SURVEY_ID>` with your own survey ID to process.
+Replace `<SURVEY_ID>` with your own survey ID to process. Replace `<TOKEN>` with your API token.
 
 ```
-https://backend-dot-cits-3200.appspot.com/submit?survey_id=<SURVEY_ID>
+https://backend-dot-cits-3200.appspot.com/submit?survey_id=<SURVEY_ID>&token=<TOKEN>
 ```
 
 
