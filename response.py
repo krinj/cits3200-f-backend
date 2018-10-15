@@ -4,7 +4,6 @@
     response
 """
 
-
 import io
 import os
 import datetime
@@ -66,6 +65,7 @@ def get_survey_info(survey_id):
     survey_info_request_json = requests.get(base_url, headers=headers)
     survey_info_json = json.loads(survey_info_request_json.text)
     meta = survey_info_json['meta']
+
     # TODO error check
     result = survey_info_json['result']
     return result
