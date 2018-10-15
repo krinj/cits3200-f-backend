@@ -1,11 +1,17 @@
-from response import *
-import time
+import os
 
-survey_name = "sentiment analytics"
-survey_id = get_survey_id(survey_name)
-print(survey_id)
+# init
+os.environ["QUALTRICS_API_TOKEN"] = "c4JmqD2ohMRIbRNXTqd6YQmHlvxIBiVvV2eekgqo"
+os.environ["QUALTRICS_DATA_CENTER"] = "ca1"
+
+# testing
+from response import *
+
+survey_id = "SV_6z1si0Nf0fgGHUF"
+
 text_questions = get_text_questions(survey_id)
 print(text_questions)
-start_date = "2018-08-09T08:08:00Z"
-response = get_response(survey_id, start_date)
+
+# note that this will get surveys from current time until last 1 hour, make sure to do a survey response for the survey
+response = get_last_response(survey_id)
 print(response)

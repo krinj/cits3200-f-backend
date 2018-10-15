@@ -4,22 +4,21 @@
     response
 """
 
-import requests
-import zipfile
-import json
+
 import io
 import os
 import datetime
+import requests
+import zipfile
+import json
+import csv
 
 # user parameters
-#api_token = os.environ["QUALTRICS_API_TOKEN"]
-api_token = "2uru8E7EJNNE7EwylDz5ca4ZUOeFo4ceb3TMG8oY"
-
-#data_center = os.environ["QUALTRICS_DATA_CENTER"]
-data_center = "ca1"
-
+api_token = os.environ["QUALTRICS_API_TOKEN"]
+data_center = os.environ["QUALTRICS_DATA_CENTER"]
 file_format = "csv"
 
+# not needed, use sid from survey flow instead
 def get_survey_id(survey_name):
 
     # initialisation
@@ -54,9 +53,10 @@ def get_survey_id(survey_name):
             survey_id = survey['id']
             return survey_id
 
+
 def get_text_questions(survey_id):
 
-    #initialisation
+    # initialisation
     text_question_names = []
 
     # static parameters
@@ -84,14 +84,90 @@ def get_text_questions(survey_id):
     else:
         return text_question_names
 
-def get_response(survey_id, last_response_date):
+
+def get_last_response_legacy(survey_id):
 
     # initialisation
     responses = []
+    timedelta_hours = 1
+    time_zone = "Z"
+    start_date = str(
+        (datetime.datetime.utcnow() - datetime.timedelta(hours=timedelta_hours)).replace(
+            microsecond=0).isoformat()) + time_zone
+    end_date = str(datetime.datetime.utcnow().replace(microsecond=0).isoformat()) + time_zone
 
     # static parameters
+    request_check_progress = 0
+    progress_status = "in progress"
+    base_url = "https://{0}.qualtrics.com/API/v3/responseexports/".format(data_center)
+    headers = {
+        "content-type": "application/json",
+        "x-api-token": api_token,
+    }
+
+    # creating data export
+    download_request_payload = '{"format":"' + file_format + '","surveyId":"' + survey_id + '","startDate":"' + start_date + '","endDate":"' + end_date + '"}'
+    download_request_url = base_url
+    download_request_response = requests.request("POST", download_request_url, data=download_request_payload,
+                                                 headers=headers)
+    progress_id = download_request_response.json()["result"]["id"]
+
+    # checking on data export progress and waiting until export is ready
+    while request_check_progress < 100 and progress_status is not "complete":
+        request_check_url = base_url + progress_id
+        request_check_response = requests.request("GET", request_check_url, headers=headers)
+        request_check_progress = request_check_response.json()["result"]["percentComplete"]
+
+    # downloading file
+    request_download_url = base_url + progress_id + '/file'
+    request_download = requests.request("GET", request_download_url, headers=headers, stream=True)
+
+    # unzipping the file
+    cwd = os.getcwd()
+    download_path = cwd + '/downloads'
+    zipfile.ZipFile(io.BytesIO(request_download.content)).extractall(download_path)
+
+    # get all the responses in downloaded jsons
+    for root, dirs, files in os.walk(download_path, topdown=False):
+        for name in files:
+            file = os.path.join(root, name)
+            with open(file) as csv_file:
+                csv_reader = csv.DictReader(csv_file)
+                i = 0
+                for row in csv_reader:
+                    if i < 2:
+                        i = i + 1
+                    else:
+                        responses.append(row)
+
+
+    # delete downloaded files
+    for root, dirs, files in os.walk(download_path, topdown=False):
+        for name in files:
+            file = os.path.join(root, name)
+            os.remove(file)
+
+    if not responses:
+        return None
+    else:
+        return responses[-1]
+
+
+def get_last_response(survey_id):
+
+    # initialisation
+    responses = []
+    timedelta_hours = 1
+    time_zone = "Z"
+    start_date = str(
+        (datetime.datetime.utcnow() - datetime.timedelta(hours=timedelta_hours)).replace(microsecond=0).isoformat()) + time_zone
+    end_date = str(datetime.datetime.utcnow().replace(microsecond=0).isoformat()) + time_zone
+
+
+    # static parameters
+    request_check_progress = 0.0
     progress_status = "inProgress"
-    base_url = "https://{0}.qualtrics.com/API/v3/survey/{1}/export-responses/".format(data_center, survey_id)
+    base_url = "https://{0}.qualtrics.com/API/v3/surveys/{1}/export-responses/".format(data_center, survey_id)
     headers = {
         "content-type": "application/json",
         "x-api-token": api_token,
@@ -99,18 +175,19 @@ def get_response(survey_id, last_response_date):
 
     # creating data export
     download_request_url = base_url
-    end_date = str(datetime.datetime.utcnow().replace(microsecond=0).isoformat()) + "Z"
-    download_request_payload = '{"format":"' + file_format + '","startDate":"' + last_response_date + '","endDate":"' + end_date + '","limit":"' + str(1) + '"}'
+    download_request_payload = '{"format":"' + file_format + '","startDate":"' + start_date + '","endDate":"' + end_date + '"}'
     download_request_response = requests.request("POST", download_request_url, data=download_request_payload,
                                                  headers=headers)
-    print(download_request_response.text)
-    # TODO ERRROR in result
     progress_id = download_request_response.json()["result"]["progressId"]
 
     # checking on data export progress and waiting until export is ready
-    while progress_status is not "complete" and progress_status is not "failed":
+    while not progress_status == "complete" and not progress_status == "failed":
         request_check_url = base_url + progress_id
         request_check_response = requests.request("GET", request_check_url, headers=headers)
+        request_check_progress = request_check_response.json()["result"]["percentComplete"]
+        progress_status = request_check_response.json()["result"]["status"]
+        #print("Download is " + str(request_check_progress) + " complete")
+        #print(request_check_response.json())
 
     # check for error
     if progress_status is "failed":
@@ -124,17 +201,22 @@ def get_response(survey_id, last_response_date):
 
     # unzipping the file
     cwd = os.getcwd()
-    download_path = cwd + '/response_downloads'
+    download_path = cwd + '/downloads'
     zipfile.ZipFile(io.BytesIO(request_download.content)).extractall(download_path)
 
     # get all the responses in downloaded jsons
     for root, dirs, files in os.walk(download_path, topdown=False):
         for name in files:
             file = os.path.join(root, name)
-            with open(file) as json_file:
-                json_response = json.load(json_file)
-                if json_response['responses']:
-                    responses.append(json_response['responses'])
+            with open(file) as csv_file:
+                csv_reader = csv.DictReader(csv_file)
+                i = 0
+                for row in csv_reader:
+                    if i < 2:
+                        i = i + 1
+                    else:
+                        responses.append(row)
+
 
     # delete downloaded files
     for root, dirs, files in os.walk(download_path, topdown=False):
@@ -145,4 +227,4 @@ def get_response(survey_id, last_response_date):
     if not responses:
         return None
     else:
-        return responses
+        return responses[-1]
