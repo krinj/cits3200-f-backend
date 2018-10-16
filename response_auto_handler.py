@@ -25,12 +25,10 @@ def handle_survey_response(survey_id: str, token: str, data_center: str="ca1"):
     survey_info_dict = get_survey_info_dict(survey_id, token, data_center)
     if survey_info_dict is None:
         raise Exception("Handle survey response error, survey info data not found")
-        return None
     qname_qid_dict = get_qname_qid_dict(survey_info_dict)
     response_dict = get_last_response_dict(survey_id, token, data_center)
     if response_dict is None:
         raise Exception("Handle survey response error, last response data not found")
-        return None
 
     # qids
     gender_qid = qname_qid_dict[TAG_GENDER]

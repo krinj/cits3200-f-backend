@@ -44,7 +44,6 @@ def get_survey_info_dict(survey_id, api_token: str, data_center: str):
     # error checking
     if meta['httpStatus'] != HTTP_SUCCESS_OK:
         raise Exception("Qualtrics surveys API error.", meta['httpStatus'])
-        return None
 
     result = survey_info_json['result']
     return result
@@ -83,8 +82,9 @@ def get_last_response_dict(survey_id, api_token: str, data_center: str):
     responses = []
     start_date = str(
         (datetime.datetime.utcnow() - datetime.timedelta(hours=HOUR_INTERVAL)).replace(microsecond=0).isoformat()) + \
-                 TIME_ZONE
+        TIME_ZONE
     end_date = str(datetime.datetime.utcnow().replace(microsecond=0).isoformat()) + TIME_ZONE
+    global request_check_response
 
     # static parameters
     progress_status = "inProgress"
@@ -111,7 +111,6 @@ def get_last_response_dict(survey_id, api_token: str, data_center: str):
     # check for error
     if progress_status is "failed":
         raise Exception("Qualtrics API error, export failed")
-        return None
 
     file_id = request_check_response.json()["result"]["fileId"]
 
