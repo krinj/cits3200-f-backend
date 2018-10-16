@@ -4,7 +4,6 @@ from response_data import *
 import time
 from typing import List
 
-from response import *
 from response_generator import generate_random_response
 
 from google.cloud import bigquery
@@ -74,9 +73,6 @@ def manual_submit():
 
 @app.route('/submit', methods=["GET", "POST"])
 def submit():
-    # TODO: Fill in the code to send to the server here.
-    # Keep this script clean. Write the Qualtrics extraction logic in a different file.
-
     survey_id = request.args.get("survey_id")
     token = request.args.get("token")
 
