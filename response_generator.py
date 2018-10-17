@@ -14,8 +14,9 @@ def generate_random_response() -> ResponseData:
     response_data = ResponseData()
     response_data.year_of_birth = random.randint(1960, 1995)
     response_data.organization = random.choice(["Google", "Apple", "IBM"])
+    response_data.abn = "11223491505"
     response_data.question_name = "Random Question Template?"
-    response_data.question_id = "nlp_random_question"
+    response_data.question_id = "NLP_RANDOM"
     response_data.gender = random.choice(["male", "female", "unspecified"])
     response_data.timestamp = int(time.time())
     response_data.employment_status = random.choice(["part_time", "full_time", "unspecified"])

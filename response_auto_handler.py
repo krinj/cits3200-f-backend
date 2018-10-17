@@ -14,12 +14,29 @@ __email__ = "juangbhanich.k@gmail.com"
 
 TAG_YEAR_OF_BIRTH = "YOB"
 TAG_ORGANIZATION = "ORG"
+TAG_ABN = "ABN"
 TAG_GENDER = "GEN"
 TAG_EMPLOYMENT_STATUS = "EMP"
 TAG_NLP_RESPONSE = "NLP"
 
+# ===================================================================================================
+# Response Handling Modes.
+# ===================================================================================================
 
-def handle_survey_response(survey_id: str, token: str, data_center: str="ca1"):
+MODE_LAST_RESPONSE = "LAST_RESPONSE"  # Get only the latest response.
+MODE_ALL_RESPONSE = "ALL_RESPONSES"  # Get all the responses (as many as we can).
+MODE_HOUR_RESPONSE = "HOUR_RESPONSE"  # Get the all the responses in the last hour.
+
+
+def handle_survey_response(
+        survey_id: str,
+        token: str,
+        data_center: str="ca1",
+        mode: str = None
+):
+
+    # TODO: Check the 'mode' paramter for each of the three constants defined above.
+    # TODO: Modify the responses returned by the API to match the request.
 
     # dictionaries
     survey_info_dict = get_survey_info_dict(survey_id, token, data_center)
@@ -45,6 +62,10 @@ def handle_survey_response(survey_id: str, token: str, data_center: str="ca1"):
         r_data.year_of_birth = int(response_dict[TAG_YEAR_OF_BIRTH])
         r_data.organization = response_dict[TAG_ORGANIZATION]
         r_data.question_name = ((survey_info_dict['questions'])[q_id])['questionText']
+
+        # TODO: Read the ABN from the actual thing.
+        r_data.abn = "11223491505"
+
         r_data.question_id = q_name
         r_data.gender = \
             ((((survey_info_dict['questions'])[gender_qid])['choices'])[response_dict[TAG_GENDER]])['choiceText']

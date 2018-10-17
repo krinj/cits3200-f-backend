@@ -1,5 +1,6 @@
+from collision_checker import get_existing_keys
 from flask import Flask, request, jsonify
-from response_auto_handler import handle_survey_response
+from response_auto_handler import handle_survey_response, MODE_LAST_RESPONSE, MODE_ALL_RESPONSE, MODE_HOUR_RESPONSE
 from response_data import *
 import time
 from typing import List
@@ -73,15 +74,34 @@ def manual_submit():
 
 @app.route('/submit', methods=["GET", "POST"])
 def submit():
-    survey_id = request.args.get("survey_id")
-    token = request.args.get("token")
-
-    data_center = request.args.get("data_center")
-    data_center = "ca1"if data_center is None else data_center
-
-    responses = handle_survey_response(survey_id, token, data_center)
+    survey_id, token, data_center = get_query_parameters(request)
+    responses = handle_survey_response(survey_id, token, data_center, MODE_LAST_RESPONSE)
     _process_responses(responses)
-    return "CITS 3200: Submission Endpoint"
+    return "CITS 3200: Submission Endpoint (Process Latest Response)"
+
+
+@app.route('/process_last_hour', methods=["GET", "POST"])
+def process_last_hour():
+    survey_id, token, data_center = get_query_parameters(request)
+    responses = handle_survey_response(survey_id, token, data_center, MODE_HOUR_RESPONSE)
+    _process_responses(responses)
+    return "CITS 3200: Submission Endpoint (Process Last Hour)"
+
+
+@app.route('/process_all', methods=["GET", "POST"])
+def process_all():
+    survey_id, token, data_center = get_query_parameters(request)
+    responses = handle_survey_response(survey_id, token, data_center, MODE_ALL_RESPONSE)
+    _process_responses(responses)
+    return "CITS 3200: Submission Endpoint (Process All)"
+
+
+def get_query_parameters(flask_request) -> (str, str, str):
+    survey_id = flask_request.args.get("survey_id")
+    token = flask_request.args.get("token")
+    data_center = flask_request.args.get("data_center")
+    data_center = "ca1" if data_center is None else data_center
+    return survey_id, token, data_center
 
 
 @app.route('/test_submit', methods=["GET", "POST"])
@@ -108,6 +128,12 @@ def test_submit():
 def _process_responses(response_data_list: List[ResponseData]):
     """ Filter out any responses without the correct question ID. """
     response_data_list = [r for r in response_data_list if K_NLP_TAG in r.question_id[:len(K_NLP_TAG)]]
+
+    # Prune out any responses where the key already exists in the table.
+    response_keys = [r.submission_id for r in response_data_list]
+    existing_keys = get_existing_keys(K_DATASET, K_TABLE, response_keys)
+    response_data_list = [r for r in response_data_list if r.submission_id not in existing_keys]
+
     _process_nlp_inference(response_data_list)
     _upload_response(response_data_list)
 

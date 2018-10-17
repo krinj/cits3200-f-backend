@@ -4,7 +4,7 @@
 Contains a data structure to help format the rows for pushing
 into BigQuery.
 """
-
+import hashlib
 import time
 import uuid
 from typing import List
@@ -19,6 +19,8 @@ __email__ = "juangbhanich.k@gmail.com"
 
 K_KEY: str = "key"
 K_ORGANIZATION: str = "organization"
+K_ABN: str = "abn"
+K_ABN_HASH: str = "abn_hash"
 K_GENDER: str = "gender"
 K_TIMESTAMP: str = "timestamp"
 K_YEAR_OF_BIRTH: str = "year_of_birth"
@@ -56,6 +58,7 @@ class ResponseData:
         timestamp = int(time.time())
         self.uid = uuid.uuid4().hex
         self.organization: str = "organization"
+        self.abn: str = "abn"
         self.key: str = f"{self.organization}_{timestamp}_{self.uid}"
         self.gender: str = "male"
         self.timestamp: int = timestamp
@@ -70,15 +73,18 @@ class ResponseData:
         self.overall_sentiment: float = 0.5
         self.entity: List[Entity] = []
 
-    def __repr__(self):
-        data = self.export_as_json()
-        return str(data)
-
     def generate_key(self):
-        self.key = f"{self.organization.lower()}_{self.timestamp}_{self.uid}"
+        self.key = f"{self.abn_hash}_{self.timestamp}_{self.uid[:5]}"
 
     def add_entity(self, name: str, score: float):
         self.entity.append(Entity(name, score))
+
+    @property
+    def abn_hash(self):
+        encoded_abn = self.abn.strip().encode("utf-8")
+        hash_object = hashlib.sha1(encoded_abn)
+        hex_digest = hash_object.hexdigest()
+        return hex_digest
 
     @property
     def _entity_as_data(self):
@@ -91,6 +97,8 @@ class ResponseData:
         data = {
             K_KEY: self.key,
             K_ORGANIZATION: self.organization,
+            K_ABN: self.abn,
+            K_ABN_HASH: self.abn_hash,
             K_GENDER: self.gender,
             K_TIMESTAMP: self.timestamp,
             K_YEAR_OF_BIRTH: self.year_of_birth,
