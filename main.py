@@ -133,9 +133,10 @@ def _process_responses(response_data_list: List[ResponseData]):
     response_keys = [r.submission_id for r in response_data_list]
     existing_keys = get_existing_keys(K_DATASET, K_TABLE, response_keys)
     response_data_list = [r for r in response_data_list if r.submission_id not in existing_keys]
-
-    _process_nlp_inference(response_data_list)
-    _upload_response(response_data_list)
+    
+    if len(response_data_list) > 0:
+        _process_nlp_inference(response_data_list)
+        _upload_response(response_data_list)
 
 
 def _upload_response(response_data_list: List[ResponseData]):
