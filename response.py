@@ -12,22 +12,17 @@ import zipfile
 import json
 import csv
 
-from google.cloud import bigquery
 from response_data import ResponseData
 
 __author__ = "Archy Nayoan"
 
 
+# settings
+MINUTES_INTERVAL = 10  # The time range of responses in minutes to get the last response
+
 # global variables
 K_HTTP_SUCCESS_OK = "200 - OK"  # The http status code for success OK
 K_FILE_FORMAT = "csv"  # The format of the downloaded file
-
-# TODO: move these to main and use arguments in functions instead
-# big query global variables
-K_PROJECT = "cits-3200"
-K_DATASET = "analytics"
-K_TABLE = "responses"
-K_RESPONSE_ID_COLUMN = "submission_id"
 
 # question tags
 TAG_YEAR_OF_BIRTH = "YOB"
@@ -42,9 +37,6 @@ MODE_LAST_RESPONSE = "LAST_RESPONSE"  # Get only the latest response.
 MODE_ALL_RESPONSE = "ALL_RESPONSES"  # Get all the responses (as many as we can).
 MODE_HOUR_RESPONSE = "HOUR_RESPONSE"  # Get the all the responses in the last hour.
 
-# settings
-MINUTES_INTERVAL = 10  # The time range of responses in minutes to get the last response
-
 
 def get_survey_responses(
         mode: str,
@@ -52,7 +44,8 @@ def get_survey_responses(
         token: str,
         data_center: str="ca1",):
     """
-    get all responses of a single survey (given survey id) that are not in big query yet and depending on the mode
+    get responses of a single survey (given survey id)
+    modes: get latest response, get all responses, get last hour response
 
     :param mode:
     :param survey_id:
@@ -61,20 +54,15 @@ def get_survey_responses(
     :return:
     """
 
-    # TODO use big query info as arguments or move process of getting existing responses in main then add the results of that as argument
-
     # initialisation
     responses = []  # all the responses in form of ResponseData data structure
-
-    # querying existing response ids from big query as a list
-    existing_response_ids_list = bigquery_query_distinct_list(K_PROJECT, K_DATASET, K_TABLE, K_RESPONSE_ID_COLUMN)
 
     # extracting data from Qualtrics
     survey_info_dict = get_survey_info_dict(survey_id, token, data_center)
     if survey_info_dict is None:
         raise Exception("Get survey responses error, survey info data not found")
     qname_qid_dict = get_qname_qid_dict(survey_info_dict)
-    response_dict_list = get_response_dict_list(mode, survey_id, token, data_center, existing_response_ids_list)
+    response_dict_list = get_response_dict_list(mode, survey_id, token, data_center)
     if response_dict_list is None:
 
         # there are no new responses
@@ -96,10 +84,7 @@ def get_survey_responses(
             r_data.year_of_birth = int(response_dict[TAG_YEAR_OF_BIRTH])
             r_data.organization = response_dict[TAG_ORGANIZATION]
             r_data.question_name = ((survey_info_dict['questions'])[q_id])['questionText']
-
-            # TODO: Read the ABN from the actual thing.
-            r_data.abn = "11223491505"
-
+            r_data.abn = response_dict[TAG_ABN]
             r_data.question_id = q_name
             r_data.gender = \
                 ((((survey_info_dict['questions'])[gender_qid])['choices'])[response_dict[TAG_GENDER]])['choiceText']
@@ -165,7 +150,15 @@ def get_qname_qid_dict(survey_info_dict: dict):
         return q_dict
 
 
-def get_response_dict_list(mode: str, survey_id: str, api_token: str, data_center: str, existing_response_ids: list):
+def get_response_dict_list(mode: str, survey_id: str, api_token: str, data_center: str):
+    """
+
+    :param mode:
+    :param survey_id:
+    :param api_token:
+    :param data_center:
+    :return:
+    """
 
     # initialisation
     responses_dict_list = []
@@ -187,7 +180,8 @@ def get_response_dict_list(mode: str, survey_id: str, api_token: str, data_cente
         start_date = str((current_utc_datetime - datetime.timedelta(minutes=MINUTES_INTERVAL)).replace(
             microsecond=0).isoformat()) + utc_time_zone
         end_date = str(current_utc_datetime.replace(microsecond=0).isoformat()) + utc_time_zone
-        download_request_payload = '{"format":"' + K_FILE_FORMAT + '","startDate":"' + start_date + '","endDate":"' + end_date + '"}'
+        download_request_payload = '{"format":"' + K_FILE_FORMAT + '","startDate":"' + start_date + '","endDate":"' + \
+                                   end_date + '"}'
 
     elif mode == MODE_ALL_RESPONSE:
         download_request_payload = '{"format":"' + K_FILE_FORMAT + '"}'
@@ -198,7 +192,8 @@ def get_response_dict_list(mode: str, survey_id: str, api_token: str, data_cente
         start_date = str(
             (current_utc_datetime - datetime.timedelta(hours=1)).replace(microsecond=0).isoformat()) + utc_time_zone
         end_date = str(current_utc_datetime.replace(microsecond=0).isoformat()) + utc_time_zone
-        download_request_payload = '{"format":"' + K_FILE_FORMAT + '","startDate":"' + start_date + '","endDate":"' + end_date + '"}'
+        download_request_payload = '{"format":"' + K_FILE_FORMAT + '","startDate":"' + start_date + '","endDate":"' + \
+                                   end_date + '"}'
 
     # creating data export
     download_request_url = base_url
@@ -228,22 +223,13 @@ def get_response_dict_list(mode: str, survey_id: str, api_token: str, data_cente
         byte_file = input_zip.read(name)
         fake_file = io.StringIO(byte_file.decode('utf8'))
         csv_reader = csv.DictReader(fake_file)
-        i = 0
-        # TODO: consider list slicing of csv reader? might be large amount of responses
-        for row in csv_reader:
+        dict_list = list(csv_reader)
+        for dict_ in dict_list[2:]:
 
-            # skip meta data rows
-            if i > 1:
-
-                # response is finished
-                finished = row['Finished']
-                if finished == '1':
-
-                    # response id not in existing response ids list
-                    response_id = row['ResponseId']
-                    if response_id not in existing_response_ids:
-                        responses_dict_list.append(row)
-            i = i + 1
+            # add only if response is finished
+            finished = dict_['Finished']
+            if finished == '1':
+                responses_dict_list.append(dict_)
 
     # return list of dictionaries according to mode
     if mode == MODE_LAST_RESPONSE:
@@ -254,24 +240,3 @@ def get_response_dict_list(mode: str, survey_id: str, api_token: str, data_cente
 
     elif mode == MODE_HOUR_RESPONSE:
         return responses_dict_list
-
-
-def bigquery_query_distinct_list(project: str, dataset: str, table: str, column: str):
-
-    client = bigquery.Client()
-
-    # query
-    query_job = client.query(
-        f"""
-        SELECT DISTINCT
-          {column}
-        FROM
-          `{project}.{dataset}.{table}`;
-
-        """)
-
-    results = query_job.result()
-    # TODO query error checking
-
-    results_list = list(results)
-    return results_list

@@ -4,7 +4,6 @@ from response import get_survey_responses, MODE_LAST_RESPONSE, MODE_ALL_RESPONSE
 from response_data import *
 import time
 from typing import List
-
 from response_generator import generate_random_response
 
 from google.cloud import bigquery
@@ -17,8 +16,10 @@ from google.cloud.language import types
 # ===================================================================================================
 
 
+K_PROJECT = "cits-3200"
 K_DATASET = "analytics"
 K_TABLE = "responses"
+K_RESPONSE_ID_COLUMN = "submission_id"
 K_NLP_TAG = "NLP"
 
 
