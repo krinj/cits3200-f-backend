@@ -64,9 +64,7 @@ def get_survey_responses(
     qname_qid_dict = get_qname_qid_dict(survey_info_dict)
     response_dict_list = get_response_dict_list(mode, survey_id, token, data_center)
     if response_dict_list is None:
-
-        # there are no new responses
-        return None
+        raise Exception("Get survey responses error, responses data not found")
 
     # qids
     gender_qid = qname_qid_dict[TAG_GENDER]

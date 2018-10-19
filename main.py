@@ -15,6 +15,7 @@ from google.cloud.language import types
 # Settings.
 # ===================================================================================================
 
+# TODO: maybe not hardcoding the project name and column that has the submission id (response id)
 
 K_PROJECT = "cits-3200"
 K_DATASET = "analytics"
@@ -54,6 +55,9 @@ def manual_submit():
     Receive Survey Response as a POST request.
     Assumes that we receive a JSON object with all of the keys populated.
     """
+
+    # TODO: do we still need this?
+
     post_data = request.json
 
     r_data = ResponseData()
