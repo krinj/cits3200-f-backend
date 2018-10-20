@@ -1,10 +1,9 @@
 from collision_checker import get_existing_keys
 from flask import Flask, request, jsonify
-from response_auto_handler import handle_survey_response, MODE_LAST_RESPONSE, MODE_ALL_RESPONSE, MODE_HOUR_RESPONSE
+from response import get_survey_responses, MODE_LAST_RESPONSE, MODE_ALL_RESPONSE, MODE_HOUR_RESPONSE
 from response_data import *
 import time
 from typing import List
-
 from response_generator import generate_random_response
 
 from google.cloud import bigquery
@@ -16,10 +15,14 @@ from google.cloud.language import types
 # Settings.
 # ===================================================================================================
 
+# TODO: maybe not hardcoding the project name and column that has the submission id (response id)
 
+K_PROJECT = "cits-3200"
 K_DATASET = "analytics"
 K_TABLE = "responses"
+K_RESPONSE_ID_COLUMN = "submission_id"
 K_NLP_TAG = "NLP"
+
 
 # ===================================================================================================
 # App: Initialization.
@@ -52,6 +55,9 @@ def manual_submit():
     Receive Survey Response as a POST request.
     Assumes that we receive a JSON object with all of the keys populated.
     """
+
+    # TODO: do we still need this?
+
     post_data = request.json
 
     r_data = ResponseData()
@@ -75,7 +81,7 @@ def manual_submit():
 @app.route('/submit', methods=["GET", "POST"])
 def submit():
     survey_id, token, data_center = get_query_parameters(request)
-    responses = handle_survey_response(survey_id, token, data_center, MODE_LAST_RESPONSE)
+    responses = get_survey_responses(MODE_LAST_RESPONSE, survey_id, token, data_center)
     _process_responses(responses)
     return "CITS 3200: Submission Endpoint (Process Latest Response)"
 
@@ -83,7 +89,7 @@ def submit():
 @app.route('/process_last_hour', methods=["GET", "POST"])
 def process_last_hour():
     survey_id, token, data_center = get_query_parameters(request)
-    responses = handle_survey_response(survey_id, token, data_center, MODE_HOUR_RESPONSE)
+    responses = get_survey_responses(MODE_HOUR_RESPONSE, survey_id, token, data_center)
     _process_responses(responses)
     return "CITS 3200: Submission Endpoint (Process Last Hour)"
 
@@ -91,7 +97,7 @@ def process_last_hour():
 @app.route('/process_all', methods=["GET", "POST"])
 def process_all():
     survey_id, token, data_center = get_query_parameters(request)
-    responses = handle_survey_response(survey_id, token, data_center, MODE_ALL_RESPONSE)
+    responses = get_survey_responses(MODE_ALL_RESPONSE, survey_id, token, data_center)
     _process_responses(responses)
     return "CITS 3200: Submission Endpoint (Process All)"
 
