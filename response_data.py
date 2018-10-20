@@ -58,7 +58,7 @@ class ResponseData:
         timestamp = int(time.time())
         self.uid = uuid.uuid4().hex
         self.organization: str = "organization"
-        self.abn: str = "abn"
+        self.abn: str = "12345678900"
         self.key: str = f"{self.organization}_{timestamp}_{self.uid}"
         self.gender: str = "male"
         self.timestamp: int = timestamp

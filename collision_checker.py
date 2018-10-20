@@ -12,6 +12,7 @@ __email__ = "juangbhanich.k@gmail.com"
 
 
 def get_existing_keys(
+        project: str,
         dataset: str,
         table: str,
         id_list: List[str],
@@ -30,7 +31,7 @@ def get_existing_keys(
         SELECT DISTINCT
           submission_id
         FROM
-          `cits-3200.{dataset}.{table}`
+          `{project}.{dataset}.{table}`
         WHERE
           UNIX_SECONDS(timestamp) > {timestamp_from} 
           AND UNIX_SECONDS(timestamp) < {timestamp_to}

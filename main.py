@@ -78,24 +78,24 @@ def manual_submit():
     return "CITS 3200: Manual Submission Endpoint"
 
 
-@app.route('/submit', methods=["GET", "POST"])
-def submit():
+@app.route('/submit_recent', methods=["GET", "POST"])
+def submit_recent():
     survey_id, token, data_center = get_query_parameters(request)
     responses = get_survey_responses(MODE_LAST_RESPONSE, survey_id, token, data_center)
     _process_responses(responses)
     return "CITS 3200: Submission Endpoint (Process Latest Response)"
 
 
-@app.route('/process_last_hour', methods=["GET", "POST"])
-def process_last_hour():
+@app.route('/submit_last_hour', methods=["GET", "POST"])
+def submit_last_hour():
     survey_id, token, data_center = get_query_parameters(request)
     responses = get_survey_responses(MODE_HOUR_RESPONSE, survey_id, token, data_center)
     _process_responses(responses)
     return "CITS 3200: Submission Endpoint (Process Last Hour)"
 
 
-@app.route('/process_all', methods=["GET", "POST"])
-def process_all():
+@app.route('/submit_all', methods=["GET", "POST"])
+def submit_all():
     survey_id, token, data_center = get_query_parameters(request)
     responses = get_survey_responses(MODE_ALL_RESPONSE, survey_id, token, data_center)
     _process_responses(responses)
@@ -137,7 +137,7 @@ def _process_responses(response_data_list: List[ResponseData]):
 
     # Prune out any responses where the key already exists in the table.
     response_keys = [r.submission_id for r in response_data_list]
-    existing_keys = get_existing_keys(K_DATASET, K_TABLE, response_keys)
+    existing_keys = get_existing_keys(K_PROJECT, K_DATASET, K_TABLE, response_keys)
     response_data_list = [r for r in response_data_list if r.submission_id not in existing_keys]
     
     if len(response_data_list) > 0:
