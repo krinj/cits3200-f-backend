@@ -32,7 +32,7 @@ def get_existing_keys(
 
     # Remove the comma for SQL.
     if len(id_list) == 1:
-        id_string = id_string.strip(",")
+        id_string = id_string.replace(",", "")
 
     # Send a test query to the client.
     query_job = client.query(
