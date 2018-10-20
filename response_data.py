@@ -81,8 +81,8 @@ class ResponseData:
 
     @property
     def abn_hash(self):
-        encoded_abn = self.abn.replace(" ", "")
-        encoded_abn = encoded_abn.strip().encode("utf-8")
+        self.abn = str(self.abn).replace(" ", "")
+        encoded_abn = self.abn.strip().encode("utf-8")
         hash_object = hashlib.sha1(encoded_abn)
         hex_digest = hash_object.hexdigest()
         return hex_digest
@@ -94,12 +94,13 @@ class ResponseData:
 
     def export_as_json(self):
         """ Return this entire response as a JSON data object. """
+        self.abn = str(self.abn).replace(" ", "")
         self.generate_key()
         data = {
             K_KEY: self.key,
-            K_ORGANIZATION: self.organization,
-            K_ABN: self.abn,
             K_ABN_HASH: self.abn_hash,
+            K_ABN: self.abn,
+            K_ORGANIZATION: self.organization,
             K_GENDER: self.gender,
             K_TIMESTAMP: self.timestamp,
             K_YEAR_OF_BIRTH: self.year_of_birth,
