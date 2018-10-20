@@ -24,6 +24,15 @@ def get_existing_keys(
     client = bigquery.Client()
 
     id_list = tuple(id_list)
+    id_string = f"{id_list}"
+
+    # No IDs to check against.
+    if len(id_list) == 0:
+        return []
+
+    # Remove the comma for SQL.
+    if len(id_list) == 1:
+        id_string = id_string.strip(",")
 
     # Send a test query to the client.
     query_job = client.query(
@@ -35,8 +44,7 @@ def get_existing_keys(
         WHERE
           UNIX_SECONDS(timestamp) > {timestamp_from} 
           AND UNIX_SECONDS(timestamp) < {timestamp_to}
-          AND submission_id IN {id_list};
-
+          AND submission_id IN {id_string};
         """)
 
     # Create a sub-list of the responses.

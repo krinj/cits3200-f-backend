@@ -66,6 +66,7 @@ In order to set up the survey for the pipeline to process, we must use some spec
 | Tag   | Description                                                  |
 | ----- | ------------------------------------------------------------ |
 | `YOB` | Year of birth.                                               |
+| `ABN` | This key should be used to store the 11 digit ABN of the organization. |
 | `ORG` | The organization that this person belongs to.                |
 | `GEN` | Gender.                                                      |
 | `EMP` | Employment status.                                           |
@@ -75,27 +76,37 @@ In order to set up the survey for the pipeline to process, we must use some spec
 
 ## Configuration
 
-There are a couple of fields hard-coded into the `main.py` script (which is the main program). This helps to define the settings for the app.
+There are a couple of fields hard-coded into the `main.py` script (which is the main program). This helps to define the settings for the app. You should not need to modify these unless you want to change the host for the GCP project.
 
 You may modify these fields, and re-commit the repository to change the hard-coded settings (although this is something you shouldn't need to do or change).
 
 In `main.py` you should find these lines near the top:
 
 ```python
+K_PROJECT = "cits-3200"
 K_DATASET = "analytics"
 K_TABLE = "responses"
 ```
 
-| Field Name  | Description                                             |
-| ----------- | ------------------------------------------------------- |
-| `K_DATASET` | The name of the BigQuery data set to push this data to. |
-| `K_TABLE`   | The name of the BigQuery table to push this data to.    |
+| Field Name  | Description                                                  |
+| ----------- | ------------------------------------------------------------ |
+| `K_PROJECT` | The name of the GCP project where all the services are stored. |
+| `K_DATASET` | The name of the BigQuery data set to push this data to.      |
+| `K_TABLE`   | The name of the BigQuery table to push this data to.         |
 
 
 
 ## API
 
 Once the App is running, you can basically 'use' it by simply sending a GET or POST request to one of its routes. For some of these, you can even just visit it in a web browser to see the result.
+
+* [Index](#index)
+* [Test Submit](#test-submit)
+* [Debug](#debug)
+* [Manual Submit](#manual-submit)
+* [Submit Recent](#submit-recent)
+* [Submit Last Hour](#submit-last-hour)
+* [Submit All](#submit-all)
 
 #### Index
 
@@ -122,6 +133,7 @@ The keys that need to be included can be verified in `response_data.py`, but her
 | Key                 | Type     | Notes                                                        |
 | ------------------- | -------- | ------------------------------------------------------------ |
 | `organization`      | `string` |                                                              |
+| `abn`               | `string` | A string version of the 11-digit ABN for this organization. Will be hashed and then used as the access key for the front end. |
 | `gender`            | `string` |                                                              |
 | `year_of_birth`     | `string` | We should enforce the type and value limit for this on the survey front end, otherwise we can get unexpected bugs from someone submitting abnormal values. |
 | `employment_status` | `string` |                                                              |
@@ -138,9 +150,9 @@ If you choose to process the data this way, then it means each distinct question
 
 ![data_flow](images/data_flow.png)
 
-#### Submit
+#### Submit Recent
 
-**Route**: https://backend-dot-cits-3200.appspot.com/submit
+**Route**: https://backend-dot-cits-3200.appspot.com/submit_recent
 This is a `POST`/`GET` request where we can get the server to automatically unpack and submit the latest response from the Qualtrics platform. You must pass in the survey ID as a query for this to work. In the Qualtrics **Survey Flow** you can put this in as a parameter.
 
 ![get_query](images/get_query.png)
@@ -153,9 +165,23 @@ Replace `<SURVEY_ID>` with your own survey ID to process. Replace `<TOKEN>` with
 https://backend-dot-cits-3200.appspot.com/submit?survey_id=<SURVEY_ID>&token=<TOKEN>
 ```
 
+#### Submit Last Hour
 
+**Route**: https://backend-dot-cits-3200.appspot.com/submit_last_hour
+This route will submit and process *all* of the Qualtrics results from a particular survey from within the last hour. Again, you must pass in the *survey_id* and *token* as variables. For surveys that would receive more responses, it may be beneficial to set up an AppScript or a cron job that can execute this API call once an hour.
 
+```
+https://backend-dot-cits-3200.appspot.com/submit_last_hour?survey_id=<SURVEY_ID>&token=<TOKEN>
+```
 
+#### Submit All
+
+**Route**: https://backend-dot-cits-3200.appspot.com/submit_all
+This route will scan for all the known responses of a survey, and attempt to submit/process them. This can be used as a last resort or as a fail safe if a server was down, or some data had failed to process.
+
+```
+https://backend-dot-cits-3200.appspot.com/submit_all?survey_id=<SURVEY_ID>&token=<TOKEN>
+```
 
 
 
