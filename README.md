@@ -53,6 +53,76 @@ runtime: python37
 
 > By default, this App will be created under the service name `backend`. I do believe though that App Engine also requires at least one app without a defined service name (i.e. default service) in order to function. So if it errors, you might need to create a simple default service, or just uncomment this line to deploy it to the default tag
 
+#### Submit Last Hour Hourly Trigger - Apps Scripts
+
+The Submit Last Hour API is required and the App Engine must be set up before setting this up.
+
+The hourly trigger uses Google Apps Script to execute our Submit Last Hour API. It checks for all missed responses that have not been added to BigQuery in the past hour. This serves as a backup operation when there are an overload of responses (multiple responses submitted at almost the same time). It is recommended to set this up in order to avoid the issue, an alternative would be using the Submit All API manually but the hourly trigger is automatic once it is set up.
+
+Go to [Google Apps Scripts](https://script.google.com/) and login using the same Google account used for App Engine and open this [link](https://script.google.com/d/1M9Th7QpKKm8a5rQTFWpguinEG0W-bv5mXq0tDu34Ee-DTYpJxo-yccOc/edit?usp=sharing). The page opened should look like below.
+
+![Open Link](images/gappscripts_open_link.png)
+
+The project will be opened and click "File" and click "Make a copy...". You will be redirected to another page or another page will be opened with the project name "Copy of..." and now you can edit your project. you may close the first page opened from the link.
+
+![File](images/gappscripts_file.png)
+
+Click the project name and you can rename the project to any name, this will take a while as the project changes its name. You can also rename the code's file name.
+
+Project name:
+
+![Rename project](images/gappscripts_rename_project.png)
+
+Code file name:
+
+![Rename code](images/gappscripts_rename_code.png)
+
+Now, edit the code by changing "XXXXXX" (inside the quotations) into its actual value.
+
+```javascript
+var surveyId = 'XXXXXX'; // change to your qualtrics survey's survey id
+var token = 'XXXXXX'; // change to your qualtrics token
+var dataCenter = 'ca1'; // change to your qualtrics data center, default: "ca1"
+```
+
+The survey id and the Qualtrics token can be retrieved from Qualtrics, go to Qualtrics and make sure you are logged in your Qualtrics account, after logged in open "Account Settings".
+
+![Qualtrics account setting](images/qualtrics_account_settings.png)
+
+Then open "Qualtrics IDs", there you can find the survey ids and your Qualtrics token.
+
+![Qualtrics IDs](images/qualtrics_id.png)
+
+The data center is defaulted to "ca1", and you might not need to change it unless your Qualtrics account uses a specific data center. You can find out your data center [here](https://api.qualtrics.com/docs/root-url). After changing everything, save your changes by CTRL+S or going through the FIle menu.
+
+After saving your changes, now click the icon for "triggers".
+
+![Triggers icon](images/gappscripts_triggers_icon.png)
+
+Add a new trigger by clicking "No triggers set up. Click here to add one now.".
+
+![Triggers](images/gappscripts_triggers.png)
+
+Make sure the it has the same values selected.
+
+![Triggers add new](images/gappscripts_new_trigger.png)
+
+You will be prompt with an "Authorisation required" message, click review permissions and sign in with the same Google Account, and then click allow to allow access.
+
+![Authorisation](images/gappscripts_authorisation.png)
+
+Now click "Publish" and click "Deploy as web app...".
+
+![Publish](images/gappscripts_publish.png)
+
+Fill in the field of Project Version with anything and click update.
+
+![Deploy as app](images/gappscripts_deploy_app.png)
+
+The Hourly Trigger Google Apps Scripts App is now set up. You can revisit "Publish" and "Deploy as app..." to "Disable" the web app or update it with new changes.
+
+![App deployed](images/gappscripts_deploy_app.png)
+
 
 
 ## Question ID
