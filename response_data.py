@@ -83,7 +83,7 @@ class ResponseData:
     def abn_hash(self):
         self.abn = str(self.abn).replace(" ", "")
         encoded_abn = self.abn.strip().encode("utf-8")
-        hash_object = hashlib.sha1(encoded_abn)
+        hash_object = hashlib.sha256(encoded_abn)
         hex_digest = hash_object.hexdigest()
         return hex_digest
 
