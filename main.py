@@ -17,7 +17,7 @@ from google.cloud.language import types
 
 # TODO: maybe not hardcoding the project name and column that has the submission id (response id)
 
-K_PROJECT = "cits-3200"
+K_PROJECT = "learning-for-purpose"
 K_DATASET = "analytics"
 K_TABLE = "responses"
 K_RESPONSE_ID_COLUMN = "submission_id"

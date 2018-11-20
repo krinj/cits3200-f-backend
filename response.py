@@ -77,7 +77,7 @@ def get_survey_responses(
         for q_name, q_id in qname_qid_dict.items():
             if q_name[:len(TAG_NLP_RESPONSE)] != TAG_NLP_RESPONSE:
                 continue
-                
+
             if q_name not in response_dict:
                 continue
 
